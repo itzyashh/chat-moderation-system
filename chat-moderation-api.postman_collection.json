@@ -1,0 +1,296 @@
+{
+	"info": {
+		"_postman_id": "c784c560-34e0-4a15-9bb9-e1f8fd8b3a3b",
+		"name": "Chat Moderation API",
+		"description": "API collection for the real-time chat moderation system",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"email\": \"testuser@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new user"
+					},
+					"response": []
+				},
+				{
+					"name": "Login User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"testuser@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login a user"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints"
+		},
+		{
+			"name": "Chat Rooms",
+			"item": [
+				{
+					"name": "Get All Chat Rooms",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/chat/rooms",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"chat",
+								"rooms"
+							]
+						},
+						"description": "Get a list of all public chat rooms"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Chat Room",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"General Chat\",\n    \"description\": \"A room for general discussions\",\n    \"userId\": \"{{userId}}\",\n    \"moderationLevel\": \"medium\",\n    \"isPrivate\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/chat/rooms",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"chat",
+								"rooms"
+							]
+						},
+						"description": "Create a new chat room"
+					},
+					"response": []
+				}
+			],
+			"description": "Chat room management endpoints"
+		},
+		{
+			"name": "Messages",
+			"item": [
+				{
+					"name": "Get Room Messages",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/chat/rooms/{{roomId}}/messages?limit=50&skip=0",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"chat",
+								"rooms",
+								"{{roomId}}",
+								"messages"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "50",
+									"description": "Number of messages to return"
+								},
+								{
+									"key": "skip",
+									"value": "0",
+									"description": "Number of messages to skip (for pagination)"
+								}
+							]
+						},
+						"description": "Get messages for a specific chat room"
+					},
+					"response": []
+				},
+				{
+					"name": "Send Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"Hello world!\",\n    \"senderId\": \"{{userId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/chat/rooms/{{roomId}}/messages",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"chat",
+								"rooms",
+								"{{roomId}}",
+								"messages"
+							]
+						},
+						"description": "Send a new message to a chat room with automatic content moderation"
+					},
+					"response": []
+				},
+				{
+					"name": "Report Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"reporterId\": \"{{userId}}\",\n    \"reason\": \"Inappropriate content\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/chat/messages/{{messageId}}/report",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"chat",
+								"messages",
+								"{{messageId}}",
+								"report"
+							]
+						},
+						"description": "Report a message for review"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Flagged Messages (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/chat/flagged-messages",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"chat",
+								"flagged-messages"
+							]
+						},
+						"description": "Get all flagged messages (admin only)"
+					},
+					"response": []
+				}
+			],
+			"description": "Message management endpoints"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string",
+			"description": "Replace with a valid user ID after registration"
+		},
+		{
+			"key": "roomId",
+			"value": "",
+			"type": "string",
+			"description": "Replace with a valid room ID after creation"
+		},
+		{
+			"key": "messageId",
+			"value": "",
+			"type": "string",
+			"description": "Replace with a valid message ID after sending a message"
+		}
+	]
+} 

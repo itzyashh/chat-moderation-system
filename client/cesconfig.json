@@ -1,0 +1,36 @@
+{
+  "cesVersion": "2.18.2",
+  "projectName": "client",
+  "packages": [
+    {
+      "name": "expo-router",
+      "type": "navigation",
+      "options": {
+        "type": "stack"
+      }
+    },
+    {
+      "name": "nativewind",
+      "type": "styling"
+    }
+  ],
+  "flags": {
+    "noGit": false,
+    "noInstall": false,
+    "overwrite": false,
+    "importAlias": true,
+    "packageManager": "yarn",
+    "eas": false,
+    "publish": false
+  },
+  "packageManager": {
+    "type": "yarn",
+    "version": "1.22.22"
+  },
+  "os": {
+    "type": "Darwin",
+    "platform": "darwin",
+    "arch": "arm64",
+    "kernelVersion": "24.4.0"
+  }
+}
