@@ -1,0 +1,378 @@
+{
+  "collection": {
+    "info": {
+      "_postman_id": "27642ed5-635c-4e43-ac08-9847c960be6f",
+      "name": "Chat Moderation API",
+      "description": "API collection for the real-time chat moderation system",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+      "updatedAt": "2025-05-10T21:16:23.000Z",
+      "createdAt": "2025-05-01T20:52:51.000Z",
+      "lastUpdatedBy": "16014475",
+      "uid": "16014475-27642ed5-635c-4e43-ac08-9847c960be6f"
+    },
+    "item": [
+      {
+        "name": "Authentication",
+        "item": [
+          {
+            "name": "Register User",
+            "id": "ed998e4b-0c7c-4949-83d7-9b2049b68c00",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n \"username\": \"testuser\",\n \"email\": \"testuser@example.com\",\n \"password\": \"password123\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/auth/register",
+                "host": ["{{base_url}}"],
+                "path": ["api", "auth", "register"]
+              },
+              "description": "Register a new user"
+            },
+            "response": []
+          },
+          {
+            "name": "Login User",
+            "id": "6688ece3-cb34-4dbd-9115-54df15627c60",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n \"email\": \"testuser@example.com\",\n \"password\": \"password123\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/auth/login",
+                "host": ["{{base_url}}"],
+                "path": ["api", "auth", "login"]
+              },
+              "description": "Login a user"
+            },
+            "response": []
+          }
+        ],
+        "id": "e6128db7-691a-4a0c-bd64-44a76b793635",
+        "description": "Authentication endpoints",
+        "uid": "16014475-e6128db7-691a-4a0c-bd64-44a76b793635"
+      },
+      {
+        "name": "Users",
+        "item": [
+          {
+            "name": "Get All Users",
+            "id": "7bc55da6-01cf-408e-bcfe-cefe17e4b3dd",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{authToken}}",
+                  "type": "text"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/api/users",
+                "host": ["{{base_url}}"],
+                "path": ["api", "users"]
+              },
+              "description": "Get a list of all users (excluding sensitive data)"
+            },
+            "response": []
+          },
+          {
+            "name": "Get User by ID",
+            "id": "8bc55da6-01cf-408e-bcfe-cefe17e4b3dd",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{authToken}}",
+                  "type": "text"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/api/users/{{userId}}",
+                "host": ["{{base_url}}"],
+                "path": ["api", "users", "{{userId}}"]
+              },
+              "description": "Get details of a specific user by their ID"
+            },
+            "response": []
+          },
+          {
+            "name": "Search Users",
+            "id": "9bc55da6-01cf-408e-bcfe-cefe17e4b3dd",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{authToken}}",
+                  "type": "text"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/api/users/search?query={{searchQuery}}",
+                "host": ["{{base_url}}"],
+                "path": ["api", "users", "search"],
+                "query": [
+                  {
+                    "key": "query",
+                    "value": "{{searchQuery}}",
+                    "description": "Search term to find users by username or email"
+                  }
+                ]
+              },
+              "description": "Search users by username or email"
+            },
+            "response": []
+          }
+        ],
+        "id": "e6128db7-691a-4a0c-bd64-44a76b793636",
+        "description": "User management endpoints",
+        "uid": "16014475-e6128db7-691a-4a0c-bd64-44a76b793636"
+      },
+      {
+        "name": "Chat Rooms",
+        "item": [
+          {
+            "name": "Get All Chat Rooms",
+            "id": "5bc55da6-01cf-408e-bcfe-cefe17e4b3dd",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/chat/rooms",
+                "host": ["{{base_url}}"],
+                "path": ["api", "chat", "rooms"]
+              },
+              "description": "Get a list of all public chat rooms"
+            },
+            "response": []
+          },
+          {
+            "name": "Create Chat Room",
+            "id": "b21cc14f-35bb-428f-b9f8-f997abbdf4f8",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n \"name\": \"General Chat\",\n \"description\": \"A room for general discussions\",\n \"userId\": \"{{userId}}\",\n \"moderationLevel\": \"medium\",\n \"isPrivate\": false\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/chat/rooms",
+                "host": ["{{base_url}}"],
+                "path": ["api", "chat", "rooms"]
+              },
+              "description": "Create a new chat room"
+            },
+            "response": []
+          }
+        ],
+        "id": "faa3f0a4-d058-4a8f-8b56-6d381821c228",
+        "description": "Chat room management endpoints",
+        "uid": "16014475-faa3f0a4-d058-4a8f-8b56-6d381821c228"
+      },
+      {
+        "name": "Messages",
+        "item": [
+          {
+            "name": "Get Room Messages",
+            "id": "546bcf14-d8df-44a3-9317-eaa423513a19",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/chat/rooms/{{roomId}}/messages?limit=50&skip=0",
+                "host": ["{{base_url}}"],
+                "path": ["api", "chat", "rooms", "{{roomId}}", "messages"],
+                "query": [
+                  {
+                    "key": "limit",
+                    "value": "50",
+                    "description": "Number of messages to return"
+                  },
+                  {
+                    "key": "skip",
+                    "value": "0",
+                    "description": "Number of messages to skip (for pagination)"
+                  }
+                ]
+              },
+              "description": "Get messages for a specific chat room"
+            },
+            "response": []
+          },
+          {
+            "name": "Send Message",
+            "id": "6a2671b0-64de-4577-abf5-6b5d5f944d83",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n \"content\": \"Hello world!\",\n \"senderId\": \"{{userId}}\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/chat/rooms/{{roomId}}/messages",
+                "host": ["{{base_url}}"],
+                "path": ["api", "chat", "rooms", "{{roomId}}", "messages"]
+              },
+              "description": "Send a new message to a chat room with automatic content moderation"
+            },
+            "response": []
+          },
+          {
+            "name": "Report Message",
+            "id": "5a0dd644-db51-44d7-9b35-243ccd67c3ab",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n \"reporterId\": \"{{userId}}\",\n \"reason\": \"Inappropriate content\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/chat/messages/{{messageId}}/report",
+                "host": ["{{base_url}}"],
+                "path": ["api", "chat", "messages", "{{messageId}}", "report"]
+              },
+              "description": "Report a message for review"
+            },
+            "response": []
+          },
+          {
+            "name": "Get Flagged Messages (Admin)",
+            "id": "f0fe3250-a4b1-4f3e-82f0-8260fb6d7838",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/chat/flagged-messages",
+                "host": ["{{base_url}}"],
+                "path": ["api", "chat", "flagged-messages"]
+              },
+              "description": "Get all flagged messages (admin only)"
+            },
+            "response": []
+          }
+        ],
+        "id": "f3a14752-cee2-40a5-887d-7c3ae9a019b5",
+        "description": "Message management endpoints",
+        "uid": "16014475-f3a14752-cee2-40a5-887d-7c3ae9a019b5"
+      }
+    ],
+    "event": [
+      {
+        "listen": "prerequest",
+        "script": {
+          "id": "5da0341e-f723-4d96-add1-756477989b93",
+          "type": "text/javascript",
+          "exec": [""]
+        }
+      },
+      {
+        "listen": "test",
+        "script": {
+          "id": "cc301bd1-a92c-4aca-9545-0549ec2b9012",
+          "type": "text/javascript",
+          "exec": [""]
+        }
+      }
+    ],
+    "variable": [
+      {
+        "key": "base_url",
+        "value": "http://localhost:5001",
+        "type": "string"
+      },
+      {
+        "key": "userId",
+        "value": "",
+        "type": "string"
+      },
+      {
+        "key": "roomId",
+        "value": "",
+        "type": "string"
+      },
+      {
+        "key": "messageId",
+        "value": "",
+        "type": "string"
+      },
+      {
+        "key": "authToken",
+        "value": "",
+        "type": "string"
+      },
+      {
+        "key": "searchQuery",
+        "value": "",
+        "type": "string"
+      }
+    ]
+  }
+} 

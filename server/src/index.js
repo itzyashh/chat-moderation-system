@@ -9,6 +9,7 @@ const moderationService = require('./services/moderationService');
 // Routes
 const authRoutes = require('./routes/auth');
 const chatRoutes = require('./routes/chat');
+const userRoutes = require('./routes/userRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -38,6 +39,7 @@ mongoose.connect(process.env.MONGODB_URI)
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/users', userRoutes);
 
 // Socket.io connection
 io.on('connection', (socket) => {
@@ -79,6 +81,12 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: 'Something went wrong!', error: err.message });
 });
 
 // Start server
