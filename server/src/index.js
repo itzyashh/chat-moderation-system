@@ -59,35 +59,44 @@ io.on('connection', (socket) => {
     // data: { senderId, recipientId, message, tempId }
     try {
       const moderationResult = await moderationService.moderateContent(data.message);
-      if (moderationResult.isSafe) {
-        // Save message to DB
-        const Message = require('./models/Message');
-        const User = require('./models/User');
-        const newMessage = new Message({
-          content: data.message,
-          sender: data.senderId,
-          recipient: data.recipientId
-        });
-        const savedMessage = await newMessage.save();
-        // Populate sender for client display
-        const senderUser = await User.findById(data.senderId).select('username email isAdmin warningCount isBanned lastActivity createdAt updatedAt');
-        // Broadcast to both sender and recipient
-        const msgPayload = {
-          ...data,
-          message: savedMessage.content,
-          timestamp: savedMessage.createdAt,
-          _id: savedMessage._id,
-          sender: senderUser
-        };
-        io.to(data.senderId).emit('receive_direct_message', msgPayload);
-        io.to(data.recipientId).emit('receive_direct_message', msgPayload);
-      } else {
-        socket.emit('message_flagged', {
-          tempId: data.tempId,
-          reasons: moderationResult.reasons,
-          timestamp: new Date()
-        });
+      console.log('Moderation result:', moderationResult);
+      const Message = require('./models/Message');
+      const User = require('./models/User');
+      // Transform toxicityResults array to object for MongoDB
+      let toxicityScores = {};
+      if (Array.isArray(moderationResult.toxicityResults)) {
+        for (const entry of moderationResult.toxicityResults) {
+          toxicityScores[entry.label] = entry.results;
+        }
       }
+      // Save message to DB, flagged if not safe
+      const newMessage = new Message({
+        content: data.message,
+        sender: data.senderId,
+        recipient: data.recipientId,
+        moderationResults: {
+          isSafe: moderationResult.isSafe,
+          reasons: moderationResult.reasons,
+          toxicityScores
+        }
+      });
+      const savedMessage = await newMessage.save();
+      const senderUser = await User.findById(data.senderId).select('username email isAdmin warningCount isBanned lastActivity createdAt updatedAt');
+      // Broadcast moderation info
+      const msgPayload = {
+        ...data,
+        message: savedMessage.content,
+        timestamp: savedMessage.createdAt,
+        _id: savedMessage._id,
+        sender: senderUser,
+        moderation: {
+          isSafe: moderationResult.isSafe,
+          reasons: moderationResult.reasons
+        }
+      };
+      console.log('Broadcasting message:', msgPayload);
+      io.to(data.senderId).emit('receive_direct_message', msgPayload);
+      io.to(data.recipientId).emit('receive_direct_message', msgPayload);
     } catch (error) {
       console.error('Moderation error:', error);
       socket.emit('error', { message: 'Message processing failed' });

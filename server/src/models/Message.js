@@ -30,7 +30,7 @@ const messageSchema = new mongoose.Schema({
     }],
     toxicityScores: {
       type: Map,
-      of: Number
+      of: [mongoose.Schema.Types.Mixed]
     }
   },
   attachments: [{

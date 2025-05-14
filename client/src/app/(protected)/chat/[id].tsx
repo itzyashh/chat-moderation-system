@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
 import { User } from '../../../types';
 import io  from 'socket.io-client';
+import { MaterialIcons } from '@expo/vector-icons';
 
 interface Message {
     _id?: string;
@@ -13,6 +14,10 @@ interface Message {
     sender: User;
     createdAt: string;
     tempId?: string;
+    moderation?: {
+        isSafe: boolean;
+        reasons: string[];
+    };
 }
 
 const SOCKET_URL = 'http://localhost:5001';
@@ -41,8 +46,19 @@ const ChatScreen = () => {
         axios.get(`http://localhost:5001/api/chat/messages/${id}`)
             .then(res => {
                 if (isMounted) {
-                    // Sort messages from oldest to newest
-                    setMessages(res.data.sort((a: Message, b: Message) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
+                    setMessages(
+                        res.data
+                            .sort((a: Message, b: Message) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+                            .map((msg: any) => ({
+                                ...msg,
+                                moderation: msg.moderationResults
+                                    ? {
+                                        isSafe: msg.moderationResults.isSafe,
+                                        reasons: msg.moderationResults.reasons,
+                                    }
+                                    : undefined,
+                            }))
+                    );
                 }
             });
         return () => { isMounted = false; };
@@ -55,6 +71,7 @@ const ChatScreen = () => {
         setSocket(s);
         s.emit('register_user', session.user._id);
         s.on('receive_direct_message', (msg: any) => {
+            console.log('Received message:', msg);
             if (
                 session?.user &&
                 ((msg.senderId === session.user._id && msg.recipientId === id) ||
@@ -69,7 +86,8 @@ const ChatScreen = () => {
                                     content: msg.message,
                                     sender: msg.senderId === session.user._id ? session.user : (user ?? { _id: '', username: '', email: '', isAdmin: false, warningCount: 0, isBanned: false, lastActivity: '', createdAt: '', updatedAt: '' }),
                                     createdAt: msg.timestamp,
-                                    tempId: msg.tempId
+                                    tempId: msg.tempId,
+                                    moderation: msg.moderation
                                 }
                                 : m
                         );
@@ -84,7 +102,8 @@ const ChatScreen = () => {
                             content: msg.message,
                             sender: msg.senderId === session.user._id ? session.user : (user ?? { _id: '', username: '', email: '', isAdmin: false, warningCount: 0, isBanned: false, lastActivity: '', createdAt: '', updatedAt: '' }),
                             createdAt: msg.timestamp,
-                            tempId: msg.tempId
+                            tempId: msg.tempId,
+                            moderation: msg.moderation
                         } as Message
                     ];
                 });
@@ -122,6 +141,18 @@ const ChatScreen = () => {
         setMessage('');
     };
 
+    const handleReportMessage = (item: Message) => {
+        if (!item._id) return;
+        axios.post(`http://localhost:5001/api/chat/messages/${item._id}/report`, {
+            reporterId: session?.user?._id,
+            reason: 'Toxic or harmful content'
+        }).then(() => {
+            Alert.alert('Reported', 'Message has been reported for review.');
+        }).catch(() => {
+            Alert.alert('Error', 'Failed to report message.');
+        });
+    };
+
     if (userLoading) {
         return (
             <View className="flex-1 justify-center items-center">
@@ -138,34 +169,60 @@ const ChatScreen = () => {
         );
     }
 
-    const renderMessage = ({ item }: { item: Message }) => (
-        <View 
-            className={`p-3 rounded-lg mb-2 max-w-[80%] ${
-                item.sender._id === session?.user._id 
-                    ? 'bg-indigo-500 self-end' 
-                    : 'bg-gray-200 self-start'
-            }`}
-        >
-            <Text 
-                className={
-                    item.sender._id === session?.user._id 
-                        ? 'text-white' 
-                        : 'text-gray-800'
-                }
-            >
-                {item.content}
-            </Text>
-            <Text 
-                className={`text-xs mt-1 ${
-                    item.sender._id === session?.user._id 
-                        ? 'text-indigo-200' 
-                        : 'text-gray-500'
+    const renderMessage = ({ item }: { item: Message }) => {
+        const isOwn = item.sender._id === session?.user?._id;
+        const isFlagged = item.moderation && item.moderation.isSafe === false;
+        return (
+            <View 
+                className={`p-3 rounded-lg mb-2 max-w-[80%] ${
+                    isOwn 
+                        ? 'bg-indigo-500 self-end' 
+                        : 'bg-gray-200 self-start'
                 }`}
             >
-                {new Date(item.createdAt).toLocaleTimeString()}
-            </Text>
-        </View>
-    );
+                <Text 
+                    className={
+                        isOwn 
+                            ? 'text-white' 
+                            : 'text-gray-800'
+                    }
+                >
+                    {item.content}
+                </Text>
+                <Text 
+                    className={`text-xs mt-1 ${
+                        isOwn 
+                            ? 'text-indigo-200' 
+                            : 'text-gray-500'
+                    }`}
+                >
+                    {new Date(item.createdAt).toLocaleTimeString()}
+                </Text>
+                {isFlagged && (
+                    <View className="flex-row items-center mt-2">
+                        <MaterialIcons name="warning" size={16} color={isOwn ? '#FFD600' : '#FFD600'} style={{ marginRight: 4 }} />
+                        <Text
+                         numberOfLines={2}
+                         className="text-xs" style={{ color: '#FFD600', flex: 1 }}>
+                            {isOwn
+                                ? 'Your message was flagged as toxic/harmful.'
+                                : 'This message was flagged as toxic/harmful.'}
+                        </Text>
+                        {!isOwn && (
+                            <TouchableOpacity
+                                className="ml-2 px-2 py-1 bg-yellow-100 rounded"
+                                onPress={() => handleReportMessage(item)}
+                            >
+                                <Text
+                                 numberOfLines={2}
+                                 className="text-yellow-700 text-xs font-semibold">Report</Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                )}
+            </View>
+        );
+    };
 
     return (
         <KeyboardAvoidingView 
