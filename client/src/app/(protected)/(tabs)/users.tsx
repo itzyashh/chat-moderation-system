@@ -3,13 +3,22 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { User } from '../../../types';
+import { useAuth } from '@/providers/AuthProvider';
+import { useRouter } from 'expo-router';
 
 const UsersScreen = () => {
+
+    const { session } = useAuth();
+    const router = useRouter();
+
     const { data: users, isLoading, error } = useQuery<User[]>({
         queryKey: ['users'],
         queryFn: async () => {
+            console.log('token', axios.defaults.headers.common['Authorization']);
             const response = await axios.get('http://localhost:5001/api/users');
-            return response.data;
+            //filter out the current user
+            const filteredUsers = response.data.filter((user: User) => user._id !== session?.user._id);
+            return filteredUsers;
         }
     });
 
@@ -35,7 +44,7 @@ const UsersScreen = () => {
         <TouchableOpacity 
             className="bg-white p-4 border-b border-gray-200"
             onPress={() => {
-                // TODO: Navigate to user profile or chat
+                router.push(`/user/${item._id}`);
             }}
         >
             <View className="flex-row items-center">

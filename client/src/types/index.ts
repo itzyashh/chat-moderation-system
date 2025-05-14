@@ -35,20 +35,12 @@ export interface ChatRoom {
 // Message Types
 export interface Message {
     _id: string;
-    sender: User;
     content: string;
-    roomId: string;
-    isFlagged: boolean;
-    moderationResults?: {
-        isSafe: boolean;
-        reasons: string[];
-        toxicityScores: Record<string, any>;
-        scamDetected: boolean;
-    };
-    isDeleted: boolean;
-    attachments?: string[];
+    sender: User;
+    recipient: User;
     createdAt: string;
     updatedAt: string;
+    isDeleted: boolean;
 }
 
 // Auth Types

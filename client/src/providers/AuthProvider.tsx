@@ -30,6 +30,7 @@ export const AuthProvider = ({children}: PropsWithChildren) => {
     }, []);
 
     const signIn = (user: User) => {
+        console.log('user.accessToken', user.accessToken);
         axios.defaults.headers.common['Authorization'] = `Bearer ${user.accessToken}`;
         const session: Session = {
             user,
@@ -52,6 +53,7 @@ export const AuthProvider = ({children}: PropsWithChildren) => {
     const signOut = () => {
         setSession(null);
         saveSession(null);
+        axios.defaults.headers.common['Authorization'] = '';
         queryClient.clear();
     };
 

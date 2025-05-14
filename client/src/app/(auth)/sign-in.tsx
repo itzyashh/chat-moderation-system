@@ -37,7 +37,9 @@ const SignIn = () => {
         mutationFn: (credentials: LoginCredentials) => signInRequest(credentials),
         onSuccess: (data) => {
             if (data) {
-                signIn(data.user);
+                let user = data.user;
+                user.accessToken = data.token;
+                signIn(user);
                 router.replace('/(protected)/(tabs)');
             }
         },

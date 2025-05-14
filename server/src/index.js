@@ -42,31 +42,48 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/users', userRoutes);
 
 // Socket.io connection
+const connectedUsers = new Map();
+
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
-  // Join a chat room
-  socket.on('join_room', (roomId) => {
-    socket.join(roomId);
-    console.log(`User ${socket.id} joined room: ${roomId}`);
+  // User joins their own room for direct messages
+  socket.on('register_user', (userId) => {
+    socket.join(userId);
+    connectedUsers.set(userId, socket.id);
+    console.log(`User ${userId} registered with socket ${socket.id}`);
   });
 
-  // Handle new messages with content moderation
-  socket.on('send_message', async (data) => {
+  // Direct user-to-user message
+  socket.on('send_direct_message', async (data) => {
+    // data: { senderId, recipientId, message, tempId }
     try {
-      // Check message content for toxic/harmful content
       const moderationResult = await moderationService.moderateContent(data.message);
-      
       if (moderationResult.isSafe) {
-        // Broadcast message if it passes moderation
-        io.to(data.roomId).emit('receive_message', {
-          ...data,
-          timestamp: new Date()
+        // Save message to DB
+        const Message = require('./models/Message');
+        const User = require('./models/User');
+        const newMessage = new Message({
+          content: data.message,
+          sender: data.senderId,
+          recipient: data.recipientId
         });
+        const savedMessage = await newMessage.save();
+        // Populate sender for client display
+        const senderUser = await User.findById(data.senderId).select('username email isAdmin warningCount isBanned lastActivity createdAt updatedAt');
+        // Broadcast to both sender and recipient
+        const msgPayload = {
+          ...data,
+          message: savedMessage.content,
+          timestamp: savedMessage.createdAt,
+          _id: savedMessage._id,
+          sender: senderUser
+        };
+        io.to(data.senderId).emit('receive_direct_message', msgPayload);
+        io.to(data.recipientId).emit('receive_direct_message', msgPayload);
       } else {
-        // Notify sender that message was flagged
         socket.emit('message_flagged', {
-          messageId: data.messageId,
+          tempId: data.tempId,
           reasons: moderationResult.reasons,
           timestamp: new Date()
         });
@@ -77,8 +94,14 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Handle disconnection
   socket.on('disconnect', () => {
+    // Remove user from connectedUsers
+    for (const [userId, sockId] of connectedUsers.entries()) {
+      if (sockId === socket.id) {
+        connectedUsers.delete(userId);
+        break;
+      }
+    }
     console.log('User disconnected:', socket.id);
   });
 });
