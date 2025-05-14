@@ -1,5 +1,5 @@
 import { View, Text, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
@@ -173,8 +173,10 @@ const ChatScreen = () => {
         const isOwn = item.sender._id === session?.user?._id;
         const isFlagged = item.moderation && item.moderation.isSafe === false;
         return (
+            <View className="mb-2">
             <View 
-                className={`p-3 rounded-lg mb-2 max-w-[80%] ${
+                className={`
+                    p-3 rounded-lg max-w-[80%] ${
                     isOwn 
                         ? 'bg-indigo-500 self-end' 
                         : 'bg-gray-200 self-start'
@@ -198,12 +200,19 @@ const ChatScreen = () => {
                 >
                     {new Date(item.createdAt).toLocaleTimeString()}
                 </Text>
+            </View>
                 {isFlagged && (
-                    <View className="flex-row items-center mt-2">
+                    <View
+                    className={`
+                    flex-row  mb-2 items-center mt-1
+                    justify-center
+                    ${isOwn ? 'self-end' : 'self-start'}
+                    `}
+                    >
                         <MaterialIcons name="warning" size={16} color={isOwn ? '#FFD600' : '#FFD600'} style={{ marginRight: 4 }} />
                         <Text
                          numberOfLines={2}
-                         className="text-xs" style={{ color: '#FFD600', flex: 1 }}>
+                         className="text-xs" style={{ color: '#FFD600', }}>
                             {isOwn
                                 ? 'Your message was flagged as toxic/harmful.'
                                 : 'This message was flagged as toxic/harmful.'}
@@ -229,22 +238,8 @@ const ChatScreen = () => {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             className="flex-1 bg-white"
         >
+            <Stack.Screen options={{ headerTitle: user.username, headerBackTitle: 'Back' }} />
             <View className="flex-1">
-                {/* Header */}
-                <View className="p-4 border-b border-gray-200 flex-row items-center">
-                    <TouchableOpacity 
-                        onPress={() => router.back()}
-                        className="mr-4"
-                    >
-                        <Text className="text-indigo-600">Back</Text>
-                    </TouchableOpacity>
-                    <View>
-                        <Text className="font-semibold text-lg">{user.username}</Text>
-                        <Text className="text-gray-500 text-sm">
-                            {user.isAdmin ? 'Admin' : 'User'}
-                        </Text>
-                    </View>
-                </View>
 
                 {/* Messages */}
                 <FlatList
@@ -264,7 +259,7 @@ const ChatScreen = () => {
                 />
 
                 {/* Message Input */}
-                <View className="p-4 border-t border-gray-200 flex-row items-center">
+                <View className="p-4 border-t border-gray-200 flex-row items-center mb-6">
                     <TextInput
                         className="flex-1 bg-gray-100 rounded-full px-4 py-2 mr-2"
                         placeholder="Type a message..."
