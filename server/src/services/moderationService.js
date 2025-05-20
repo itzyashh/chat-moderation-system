@@ -1,5 +1,6 @@
 const tf = require('@tensorflow/tfjs-node');
 const toxicity = require('@tensorflow-models/toxicity');
+const axios = require('axios');
 
 let toxicityModel = null;
 
@@ -24,6 +25,9 @@ const SCAM_PATTERNS = [
   /\b(?:lottery|winner|won|prize|claim)\b.*?\b(?:fee|tax|deposit|payment)\b/i,
   /\b(?:whatsapp|telegram|signal)\b.*?\b(?:contact|message|private|continue)\b/i
 ];
+
+
+const SAFE_BROWSING_API_URL = 'https://safebrowsing.googleapis.com/v4/threatMatches:find';
 
 // Initialize the toxicity model
 const loadModel = async () => {
@@ -60,7 +64,55 @@ const detectScam = (text) => {
 };
 
 /**
- * Moderate content using toxicity model and scam detection
+ * Check URLs in text using Google Safe Browsing API
+ * @param {string} text
+ * @returns {Promise<{unsafe: boolean, reasons: string[]}>}
+ */
+const checkUrlsForSafety = async (text) => {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const urls = text.match(urlRegex);
+  if (!urls || !process.env.GOOGLE_SAFE_BROWSING_API_KEY) return { unsafe: false, reasons: [] };
+
+  for (const url of urls) {
+    const payload = {
+      client: {
+        clientId: 'chat-moderation-system',
+        clientVersion: '1.0.0',
+      },
+      threatInfo: {
+        threatTypes: [
+          'MALWARE',
+          'SOCIAL_ENGINEERING',
+          'UNWANTED_SOFTWARE',
+          'POTENTIALLY_HARMFUL_APPLICATION',
+        ],
+        platformTypes: ['ANY_PLATFORM'],
+        threatEntryTypes: ['URL'],
+        threatEntries: [{ url }],
+      },
+    };
+    try {
+      const response = await axios.post(
+        `${SAFE_BROWSING_API_URL}?key=${process.env.GOOGLE_SAFE_BROWSING_API_KEY}`,
+        payload
+      );
+      if (response.data && response.data.matches) {
+        const threat = response.data.matches[0];
+        return {
+          unsafe: true,
+          reasons: [`Unsafe link detected (${threat.threatType})`]
+        };
+      }
+    } catch (error) {
+      console.error('Error checking URL safety:', error);
+      return { unsafe: true, reasons: ['Error checking link safety'] };
+    }
+  }
+  return { unsafe: false, reasons: [] };
+};
+
+/**
+ * Moderate content using toxicity model, scam detection, and Safe Browsing
  * @param {string} text - Text to moderate
  * @returns {Object} - Moderation results
  */
@@ -82,10 +134,14 @@ const moderateContent = async (text) => {
     
     // Check for scams
     const scamResult = detectScam(text);
-    
+
+    // Check for unsafe URLs
+    console.log('Checking URLs for safety...', text);
+    const urlSafety = await checkUrlsForSafety(text);
+
     // Combine results
-    const isSafe = toxicLabels.length === 0 && !scamResult.isScam;
-    const reasons = [...toxicLabels, ...scamResult.reasons];
+    const isSafe = toxicLabels.length === 0 && !scamResult.isScam && !urlSafety.unsafe;
+    const reasons = [...toxicLabels, ...scamResult.reasons, ...urlSafety.reasons];
     
     return {
       isSafe,

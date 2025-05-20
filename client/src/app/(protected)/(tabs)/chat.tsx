@@ -1,11 +1,12 @@
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
-import React from 'react';
+import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, Alert } from 'react-native';
+import React, { useCallback } from 'react';
 import { FontAwesome } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
 import { User } from '../../../types';
+// import { checkUrlSafety } from '@/services/urlSafetyService';
 
 interface ChatPreview {
     user: User;
@@ -19,6 +20,27 @@ interface ChatPreview {
 const ChatScreen = () => {
     const router = useRouter();
     const { session } = useAuth();
+
+    // const checkMessageSafety = useCallback(async (content: string) => {
+    //     // Simple URL regex pattern
+    //     const urlRegex = /(https?:\/\/[^\s]+)/g;
+    //     const urls = content.match(urlRegex);
+    //
+    //     if (urls) {
+    //         for (const url of urls) {
+    //             const { isSafe, threatType } = await checkUrlSafety(url);
+    //             if (!isSafe) {
+    //                 Alert.alert(
+    //                     'Warning: Potentially Harmful Link',
+    //                     `This message contains a potentially harmful link (${threatType}). Please be cautious.`,
+    //                     [{ text: 'OK' }]
+    //                 );
+    //                 return false;
+    //             }
+    //         }
+    //     }
+    //     return true;
+    // }, []);
 
     const { data: chats, isLoading, error } = useQuery<ChatPreview[]>({
         queryKey: ['chats'],
@@ -70,40 +92,42 @@ const ChatScreen = () => {
         );
     }
 
-    const renderChatPreview = ({ item }: { item: ChatPreview }) => (
-        <TouchableOpacity 
-            className="bg-white p-4 border-b border-gray-200"
-            onPress={() => router.push(`/chat/${item.user._id}`)}
-        >
-            <View className="flex-row items-center">
-                <View className="w-12 h-12 rounded-full bg-gray-200 justify-center items-center mr-4">
-                    <Text className="text-gray-600 font-semibold">
-                        {item.user.username.charAt(0).toUpperCase()}
-                    </Text>
-                </View>
-                <View className="flex-1">
-                    <View className="flex-row justify-between items-center mb-1">
-                        <Text className="font-semibold text-gray-900">{item.user.username}</Text>
-                        <Text className="text-xs text-gray-500">
-                            {new Date(item.lastMessage.createdAt).toLocaleDateString()}
+    const renderChatPreview = ({ item }: { item: ChatPreview }) => {
+        return (
+            <TouchableOpacity 
+                className="bg-white p-4 border-b border-gray-200"
+                onPress={() => router.push(`/chat/${item.user._id}`)}
+            >
+                <View className="flex-row items-center">
+                    <View className="w-12 h-12 rounded-full bg-gray-200 justify-center items-center mr-4">
+                        <Text className="text-gray-600 font-semibold">
+                            {item.user.username.charAt(0).toUpperCase()}
                         </Text>
                     </View>
-                    <View className="flex-row justify-between items-center">
-                        <Text className="text-gray-500 text-sm" numberOfLines={1}>
-                            {item.lastMessage.content}
-                        </Text>
-                        {item.unreadCount ? (
-                            <View className="bg-indigo-500 rounded-full w-6 h-6 justify-center items-center">
-                                <Text className="text-white text-xs font-medium">
-                                    {item.unreadCount}
-                                </Text>
-                            </View>
-                        ) : null}
+                    <View className="flex-1">
+                        <View className="flex-row justify-between items-center mb-1">
+                            <Text className="font-semibold text-gray-900">{item.user.username}</Text>
+                            <Text className="text-xs text-gray-500">
+                                {new Date(item.lastMessage.createdAt).toLocaleDateString()}
+                            </Text>
+                        </View>
+                        <View className="flex-row justify-between items-center">
+                            <Text className="text-gray-500 text-sm" numberOfLines={1}>
+                                {item.lastMessage.content}
+                            </Text>
+                            {item.unreadCount ? (
+                                <View className="bg-indigo-500 rounded-full w-6 h-6 justify-center items-center">
+                                    <Text className="text-white text-xs font-medium">
+                                        {item.unreadCount}
+                                    </Text>
+                                </View>
+                            ) : null}
+                        </View>
                     </View>
                 </View>
-            </View>
-        </TouchableOpacity>
-    );
+            </TouchableOpacity>
+        );
+    };
 
     return (
         <View className="flex-1 bg-gray-50">

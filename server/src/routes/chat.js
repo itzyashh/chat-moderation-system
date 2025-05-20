@@ -292,8 +292,8 @@ router.get('/conversations', async (req, res) => {
         res.status(200).json(Array.from(conversations.values()));
     } catch (error) {
         console.error('Error fetching conversations:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
 module.exports = router; 

@@ -6,13 +6,13 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const moderationService = require('./services/moderationService');
 
+// Load environment variables
+dotenv.config();
 // Routes
 const authRoutes = require('./routes/auth');
 const chatRoutes = require('./routes/chat');
 const userRoutes = require('./routes/userRoutes');
 
-// Load environment variables
-dotenv.config();
 
 // Initialize Express app
 const app = express();

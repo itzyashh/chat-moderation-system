@@ -110,9 +110,18 @@ const ChatScreen = () => {
             }
         });
         s.on('message_flagged', (data: any) => {
+            setMessages(prev => prev.map(m =>
+                m.tempId === data.tempId
+                    ? {
+                        ...m,
+                        moderation: {
+                            isSafe: false,
+                            reasons: data.reasons || ['Flagged by moderation']
+                        }
+                    }
+                    : m
+            ));
             Alert.alert('Message Flagged', data.reasons?.join(', ') || 'Your message was flagged.');
-            // Optionally remove the optimistically added message
-            setMessages(prev => prev.filter(m => m.tempId !== data.tempId));
         });
         return () => {
             s.disconnect();
@@ -172,42 +181,60 @@ const ChatScreen = () => {
     const renderMessage = ({ item }: { item: Message }) => {
         const isOwn = item.sender._id === session?.user?._id;
         const isFlagged = item.moderation && item.moderation.isSafe === false;
+        const isUnsafeLink = isFlagged && item.moderation && item.moderation.reasons && item.moderation.reasons.some(r => r.includes('Unsafe link detected'));
         return (
             <View className="mb-2">
-            <View 
-                className={`
-                    p-3 rounded-lg max-w-[80%] ${
-                    isOwn 
-                        ? 'bg-indigo-500 self-end' 
-                        : 'bg-gray-200 self-start'
-                }`}
-            >
-                <Text 
-                    className={
+                <View 
+                    className={`
+                        p-3 rounded-lg max-w-[80%] ${
                         isOwn 
-                            ? 'text-white' 
-                            : 'text-gray-800'
-                    }
-                >
-                    {item.content}
-                </Text>
-                <Text 
-                    className={`text-xs mt-1 ${
-                        isOwn 
-                            ? 'text-indigo-200' 
-                            : 'text-gray-500'
+                            ? 'bg-indigo-500 self-end' 
+                            : 'bg-gray-200 self-start'
                     }`}
                 >
-                    {new Date(item.createdAt).toLocaleTimeString()}
-                </Text>
-            </View>
-                {isFlagged && (
+                    <Text 
+                        className={
+                            isOwn 
+                                ? 'text-white' 
+                                : 'text-gray-800'
+                        }
+                    >
+                        {item.content}
+                    </Text>
+                    <Text 
+                        className={`text-xs mt-1 ${
+                            isOwn 
+                                ? 'text-indigo-200' 
+                                : 'text-gray-500'
+                        }`}
+                    >
+                        {new Date(item.createdAt).toLocaleTimeString()}
+                    </Text>
+                </View>
+                {isUnsafeLink && (
                     <View
-                    className={`
-                    flex-row  mb-2 items-center mt-1
-                    justify-center
-                    ${isOwn ? 'self-end' : 'self-start'}
-                    `}
+                        className={`
+                            flex-row mb-2 items-center mt-1
+                            justify-center
+                            ${isOwn ? 'self-end' : 'self-start'}
+                        `}
+                    >
+                        <Text
+                            numberOfLines={2}
+                            className="text-xs"
+                            style={{ color: 'orange', fontWeight: 'bold' }}
+                        >
+                            ⚠️ This message contains a potentially harmful link.
+                        </Text>
+                    </View>
+                )}
+                {isFlagged && !isUnsafeLink && (
+                    <View
+                        className={`
+                        flex-row  mb-2 items-center mt-1
+                        justify-center
+                        ${isOwn ? 'self-end' : 'self-start'}
+                        `}
                     >
                         <MaterialIcons name="warning" size={16} color={isOwn ? '#FFD600' : '#FFD600'} style={{ marginRight: 4 }} />
                         <Text
