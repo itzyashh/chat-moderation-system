@@ -36,7 +36,7 @@ export const checkUrlSafety = async (url: string): Promise<{ isSafe: boolean; th
       `${API_URL}?key=${GOOGLE_SAFE_BROWSING_API_KEY}`,
       payload
     );
-
+    console.log('Safe browsing response:', response);
     if (response.data && response.data.matches) {
       const threat = response.data.matches[0] as ThreatMatch;
       return {

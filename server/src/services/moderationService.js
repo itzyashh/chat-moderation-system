@@ -96,6 +96,7 @@ const checkUrlsForSafety = async (text) => {
         `${SAFE_BROWSING_API_URL}?key=${process.env.GOOGLE_SAFE_BROWSING_API_KEY}`,
         payload
       );
+      console.log('Safe browsing response:', response.data);
       if (response.data && response.data.matches) {
         const threat = response.data.matches[0];
         return {

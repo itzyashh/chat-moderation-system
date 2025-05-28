@@ -11,6 +11,14 @@ A comprehensive system for real-time moderation of chat messages to detect and p
 - React Native client application
 - Express.js backend
 
+## Screenshots
+
+<p align="center">
+  <img src="client/assets/chat1.png" alt="Chat Screenshot 1" width="180" style="margin-right: 8px;" />
+  <img src="client/assets/chat2.png" alt="Chat Screenshot 2" width="180" style="margin-right: 8px;" />
+  <img src="client/assets/chat3.png" alt="Chat Screenshot 3" width="180" />
+</p>
+
 ## Project Structure
 
 The project consists of two main parts:
